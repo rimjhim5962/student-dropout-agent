@@ -59,12 +59,12 @@ class StudentSuccessSystem:
         [MCP Server] → External Access
     """
     
-    def __init__(self, data_path: str = 'data/AI_Student_Success_Dropout_Dataset.csv'):
+    def __init__(self, data_path: str = None):
         """
         Initialize the Student Success System with all agents.
         
         Args:
-            data_path (str): Path to the dataset
+            data_path (str): Path to the dataset (default: None, resolves relative to package)
         """
         logger.info("Initializing Student Success System...")
         
@@ -235,14 +235,14 @@ class StudentSuccessSystem:
         print("  AI STUDENT SUCCESS & DROPOUT PREVENTION SYSTEM")
         print("="*70)
         print("\nSystem Components:")
-        print("  ✓ Data Analysis Agent     - Handles data loading and preprocessing")
-        print("  ✓ Prediction Agent        - Predicts dropout risk using ML models")
-        print("  ✓ Recommendation Agent    - Generates personalized recommendations")
-        print("  ✓ Report Agent            - Creates comprehensive reports")
-        print("  ✓ MCP Server              - Provides external API access")
+        print("  [+] Data Analysis Agent     - Handles data loading and preprocessing")
+        print("  [+] Prediction Agent        - Predicts dropout risk using ML models")
+        print("  [+] Recommendation Agent    - Generates personalized recommendations")
+        print("  [+] Report Agent            - Creates comprehensive reports")
+        print("  [+] MCP Server              - Provides external API access")
         print("\nData Files:")
-        print("  📊 Dataset:              data/AI_Student_Success_Dropout_Dataset.csv")
-        print("  🤖 Model:                models/rf.pkl")
+        print("  [Data] Dataset:              data/AI_Student_Success_Dropout_Dataset.csv")
+        print("  [Model] Model:                models/rf.pkl")
         print("\nUsage:")
         print("  1. Launch Streamlit App:  streamlit run app/streamlit_app.py")
         print("  2. Run Main Script:       python main.py")

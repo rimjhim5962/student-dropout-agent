@@ -50,7 +50,7 @@ st.markdown("""
         --success: #10B981;
         --warning: #F59E0B;
         --danger: #EF4444;
-        --bg: #F8FAFC;
+        --bg: #ffffff;
     }
 
     html, body, [class*="css"] {
@@ -257,8 +257,8 @@ st.markdown("""
 
     /* Student summary card */
     .summary-card {
-        background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
-        border: 1px solid #DBEAFE;
+        background: #ffffff;
+        border: 1px solid #E2E8F0;
         border-radius: 16px;
         padding: 1.25rem 1.4rem;
         margin-bottom: 1.25rem;
@@ -368,8 +368,8 @@ st.markdown("""
         gap: 0.5rem;
     }
     .exec-summary-box {
-        background: linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%);
-        border: 1px solid #DBEAFE;
+        background: #ffffff;
+        border: 1px solid #E2E8F0;
         border-radius: 16px;
         padding: 1.3rem 1.4rem;
         margin-bottom: 1.1rem;
@@ -526,13 +526,31 @@ def encode_student_row(row):
     extracurricular_mapping = {"No": 0, "Yes": 1, "no": 0, "yes": 1}
     
     encoded = {}
-    for key, value in row.items():
-        clean_key = str(key).strip()
-        if isinstance(value, str):
-            clean_val = value.strip()
-        else:
-            clean_val = value
-            
+    REQUIRED_FEATURES = [
+    "Age",
+    "Gender",
+    "Parental_Education",
+    "Family_Income_Level",
+    "Attendance_Percentage",
+    "Study_Hours_Per_Day",
+    "Sleep_Hours",
+    "Internet_Usage_Hours",
+    "Assignments_Completed",
+    "Previous_Grades",
+    "Class_Participation",
+    "Extracurricular_Activities",
+    "Stress_Level",
+    "Teacher_Feedback_Score",
+    "Absence_Days",
+    ]
+
+    for clean_key in REQUIRED_FEATURES:
+        clean_key = str(clean_key).strip()
+        clean_val = row.get(clean_key)
+
+        if isinstance(clean_val, str):
+            clean_val = clean_val.strip()
+                
         if clean_key == 'Gender':
             if isinstance(clean_val, str) and clean_val in gender_mapping:
                 encoded[clean_key] = gender_mapping[clean_val]
@@ -1040,7 +1058,7 @@ def show_single_prediction():
 
             # Generate report using ReportAgent
             if hasattr(report_agent, 'generate_report'):
-                report = report_agent.generate_report(student_data, prediction, recommendations)
+                report = report_agent.generate_student_report(student_data, prediction, recommendations)
             else:
                 report = report_agent.generate_student_report(student_data, prediction, recommendations)
 
@@ -1235,11 +1253,11 @@ def show_batch_analysis():
             processed_data = []
             total_students = len(df_uploaded)
 
-            for index, row in df_uploaded.iterrows():
+            for safe_index, (_, row) in enumerate(df_uploaded.iterrows(), start=1):
                 student_raw = row.to_dict()
                 student_encoded = encode_student_row(student_raw)
 
-                status_box.write(f"⏳ {steps[index % len(steps)]}")
+                status_box.write(f"⏳ {steps[(safe_index - 1) % len(steps)]}")
 
                 # Predict
                 pred = prediction_agent.predict_dropout_risk(student_encoded)
@@ -1248,13 +1266,13 @@ def show_batch_analysis():
                 recs = recommendation_agent.generate_recommendations(student_encoded, pred)
 
                 # Report
-                if hasattr(report_agent, 'generate_report'):
-                    rep = report_agent.generate_report(student_encoded, pred, recs)
-                else:
-                    rep = report_agent.generate_student_report(student_encoded, pred, recs)
+                rep = report_agent.generate_student_report(student_encoded, pred, recs)
 
-                # Capture result
-                student_id = student_raw.get('StudentID', student_raw.get('Student_ID', f"STU-{index+1}"))
+                student_id = student_raw.get(
+                    'StudentID',
+                    student_raw.get('Student_ID', f"STU-{safe_index}")
+                )
+
                 risk_lvl = pred.get('risk_level', 'Error')
                 conf = pred.get('confidence_score', 0.0)
                 prob = pred.get('dropout_probability', 0.0)
@@ -1269,15 +1287,14 @@ def show_batch_analysis():
                     '_prob_raw': prob
                 })
 
-                # Add to session history
                 if pred.get('status') == 'success':
                     st.session_state.predictions_history.append(risk_lvl)
 
-                # Update progress
-                progress_percent = (index + 1) / total_students
+                progress_percent = safe_index / total_students
                 progress_bar.progress(progress_percent)
-                status_text.text(f"Processed student {index + 1} of {total_students} ({student_id})")
-
+                status_text.text(
+                    f"Processed student {safe_index} of {total_students} ({student_id})"
+                )
             progress_bar.empty()
             status_text.empty()
             status_box.update(label=f"Batch pipeline complete — {total_students} students processed", state="complete", expanded=False)
@@ -1508,3 +1525,7 @@ def show_about():
 
 if __name__ == '__main__':
     main()
+    
+    import os
+
+print("RUNNING APP_FIXED.PY")

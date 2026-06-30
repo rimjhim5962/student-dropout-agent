@@ -248,19 +248,36 @@ class RecommendationAgent:
         """
         focus_areas = []
         
-        # Evaluate each factor
-        gpa = student_data.get('GPA', 0)
+        # Evaluate each factor with fallback to original 15 features
+        gpa = student_data.get('GPA')
+        if gpa is None:
+            grades = student_data.get('Previous_Grades')
+            if grades is not None:
+                gpa = float(grades) / 25.0
+            else:
+                gpa = 0.0
         if gpa < 2.5:
             focus_areas.append('Academic Performance')
         
-        attendance = student_data.get('AttendanceRate', 0)
+        attendance = student_data.get('AttendanceRate')
+        if attendance is None:
+            att_pct = student_data.get('Attendance_Percentage')
+            if att_pct is not None:
+                attendance = float(att_pct) / 100.0
+            else:
+                attendance = 0.0
         if attendance < 0.85:
             focus_areas.append('Class Attendance')
         
-        study_hours = student_data.get('StudyHours', 0)
-        if study_hours < 3.0:
+        study_hours = student_data.get('StudyHours')
+        if study_hours is None:
+            sh_day = student_data.get('Study_Hours_Per_Day')
+            if sh_day is not None:
+                study_hours = float(sh_day) * 7.0
+            else:
+                study_hours = 0.0
+        if study_hours < 21.0: # 3 hours per day * 7 days = 21 hours/week
             focus_areas.append('Study Habits')
-        
         
         return focus_areas
     

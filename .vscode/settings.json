@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
         "./student-dropout-agent"
-    ]
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }
